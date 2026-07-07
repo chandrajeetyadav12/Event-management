@@ -31,7 +31,7 @@ export const getEvents = async (
 };
 
 export const getEvent = async (
-  req: Request,
+  req: Request<{ id: string }>,
   res: Response
 ) => {
   const event =
@@ -46,7 +46,7 @@ export const getEvent = async (
 };
 
 export const updateEvent = async (
-  req: Request,
+  req: Request<{ id: string }>,
   res: Response
 ) => {
   const event =
@@ -62,7 +62,7 @@ export const updateEvent = async (
 };
 
 export const deleteEvent = async (
-  req: Request,
+  req: Request<{ id: string }>,
   res: Response
 ) => {
   await eventService.deleteEvent(
