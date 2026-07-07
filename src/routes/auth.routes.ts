@@ -4,7 +4,9 @@ import {
   login,
   register,
   getProfile,
-  logout
+  logout,
+  resetPasswordController,
+  forgotPasswordController
 } from "../controllers/auth.controller";
 import { protect } from "../middlewares/auth.middleware";
 
@@ -15,5 +17,14 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/profile", protect, getProfile);
 router.post("/logout", logout);
+router.post(
+  "/forgot-password",
+  forgotPasswordController
+);
+
+router.post(
+  "/reset-password/:token",
+  resetPasswordController
+);
 
 export default router;

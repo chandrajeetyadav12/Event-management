@@ -5,6 +5,9 @@ import {
 } from "../utils/bcrypt";
 import { generateToken } from "../utils/jwt";
 
+import crypto from "crypto";
+import { sendEmail } from "../utils/sendEmail";
+
 interface RegisterInput {
   name: string;
   email: string;
@@ -72,3 +75,103 @@ export const loginUser = async (
     token,
   };
 };
+
+
+
+export const forgotPassword =
+  async (email: string) => {
+    const user =
+      await User.findOne({ email });
+
+    if (!user) {
+      throw new Error(
+        "User not found"
+      );
+    }
+
+    const resetToken =
+      crypto
+        .randomBytes(32)
+        .toString("hex");
+
+    user.resetPasswordToken =
+      resetToken;
+
+    user.resetPasswordExpire =
+      new Date(
+        Date.now() +
+          15 * 60 * 1000
+      );
+
+    await user.save();
+
+    const resetUrl =
+      `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const html = `
+      <h2>Password Reset</h2>
+
+      <p>You requested a password reset.</p>
+
+      <a href="${resetUrl}">
+        Reset Password
+      </a>
+
+      <p>
+        This link expires in 15 minutes.
+      </p>
+    `;
+
+    await sendEmail(
+      user.email,
+      "Reset Password",
+      html
+    );
+
+    return {
+      message:
+        "Password reset email sent",
+    };
+  };
+
+  export const resetPassword =
+  async (
+    token: string,
+    password: string
+  ) => {
+    const user =
+      await User.findOne({
+        resetPasswordToken:
+          token,
+        resetPasswordExpire: {
+          $gt: new Date(),
+        },
+      });
+
+    if (!user) {
+      throw new Error(
+        "Invalid or expired token"
+      );
+    }
+
+    const hashedPassword =
+      await hashPassword(
+        password
+      );
+
+    user.password =
+      hashedPassword;
+
+    user.resetPasswordToken =
+      undefined;
+
+    user.resetPasswordExpire =
+      undefined;
+
+    await user.save();
+
+    return {
+      message:
+        "Password updated successfully",
+    };
+  };
