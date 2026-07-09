@@ -30,24 +30,29 @@ export const createBooking =
     await event.save();
 
     const io = getIO();
-
-    io.to(event._id.toString()).emit("seat-updated", {
+    const seatPayload = {
       eventId: event._id,
       availableSeats: event.availableSeats,
-    });
-   console.log("Seat update emitted");
+    };
+
+    io.to(event._id.toString()).emit("seat-updated", seatPayload);
+    io.emit("seat-updated", seatPayload);
+    console.log("Seat update emitted");
     const booking =
       await Booking.create({
         userId,
         eventId,
         seats,
       });
-    io.to(event._id.toString()).emit("new-booking", {
+    const bookingPayload = {
       bookingId: booking._id,
       userId,
       eventId,
       seats,
-    });
+    };
+
+    io.to(event._id.toString()).emit("new-booking", bookingPayload);
+    io.emit("new-booking", bookingPayload);
     console.log("New booking emitted");
     return booking;
   };
@@ -100,10 +105,13 @@ export const cancelBooking =
     const io = getIO();
 
     if (event?._id) {
-      io.to(event._id.toString()).emit("seat-updated", {
+      const seatPayload = {
         eventId: event._id,
         availableSeats: event.availableSeats,
-      });
+      };
+
+      io.to(event._id.toString()).emit("seat-updated", seatPayload);
+      io.emit("seat-updated", seatPayload);
     }
 
     return booking;
