@@ -31,10 +31,9 @@ export const createBooking =
 
     const io = getIO();
 
-    io.emit("seat-updated", {
+    io.to(event._id.toString()).emit("seat-updated", {
       eventId: event._id,
-      availableSeats:
-        event.availableSeats,
+      availableSeats: event.availableSeats,
     });
    console.log("Seat update emitted");
     const booking =
@@ -43,7 +42,7 @@ export const createBooking =
         eventId,
         seats,
       });
-    io.emit("new-booking", {
+    io.to(event._id.toString()).emit("new-booking", {
       bookingId: booking._id,
       userId,
       eventId,
@@ -100,11 +99,12 @@ export const cancelBooking =
 
     const io = getIO();
 
-    io.emit("seat-updated", {
-      eventId: event?._id,
-      availableSeats:
-        event?.availableSeats,
-    });
+    if (event?._id) {
+      io.to(event._id.toString()).emit("seat-updated", {
+        eventId: event._id,
+        availableSeats: event.availableSeats,
+      });
+    }
 
     return booking;
   };
