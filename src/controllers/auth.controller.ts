@@ -70,6 +70,65 @@ export const getProfile = async (
   }
 };
 
+export const updateProfile = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { name, email } = req.body;
+
+    const user = await User.findById(
+      req.user?.userId
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if email already exists
+    if (
+      email &&
+      email !== user.email
+    ) {
+      const existingUser =
+        await User.findOne({ email });
+
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Email already in use",
+        });
+      }
+    }
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Profile updated successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 export const logout = async (
   req: Request,
   res: Response

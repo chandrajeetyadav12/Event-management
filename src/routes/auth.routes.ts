@@ -6,7 +6,8 @@ import {
   getProfile,
   logout,
   resetPasswordController,
-  forgotPasswordController
+  forgotPasswordController,
+  updateProfile
 } from "../controllers/auth.controller";
 import { protect } from "../middlewares/auth.middleware";
 
@@ -16,6 +17,11 @@ router.post("/register", register);
 
 router.post("/login", login);
 router.get("/profile", protect, getProfile);
+router.put(
+  "/profile",
+  protect,
+  updateProfile
+);
 router.post("/logout", logout);
 router.post(
   "/forgot-password",
