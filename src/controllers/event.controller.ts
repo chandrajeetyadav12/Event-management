@@ -21,8 +21,12 @@ export const getEvents = async (
   req: Request,
   res: Response
 ) => {
+  const { search } = req.query;
+  
   const events =
-    await eventService.getEvents();
+    await eventService.getEvents(
+      search as string | undefined
+    );
 
   res.status(200).json({
     success: true,

@@ -6,8 +6,19 @@ export const createEvent = async (
   return Event.create(data);
 };
 
-export const getEvents = async () => {
-  return Event.find();
+export const getEvents = async (
+  search?: string
+) => {
+  const query: any = {};
+  
+  if (search && search.trim()) {
+    query.title = {
+      $regex: search.trim(),
+      $options: "i"
+    };
+  }
+  
+  return Event.find(query);
 };
 
 export const getEventById = async (
