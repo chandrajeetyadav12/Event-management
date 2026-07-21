@@ -122,11 +122,18 @@ export const forgotPassword =
       </p>
     `;
 
-    await sendEmail(
-      user.email,
-      "Reset Password",
-      html
-    );
+    try {
+      await sendEmail(
+        user.email,
+        "Reset Password",
+        html
+      );
+    } catch (error: any) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      throw error;
+    }
 
     return {
       message:
