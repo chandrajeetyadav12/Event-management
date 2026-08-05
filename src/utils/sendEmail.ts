@@ -3,35 +3,38 @@ import nodemailer from "nodemailer";
 import dns from "dns";
 
 dns.setDefaultResultOrder("ipv4first");
+
+const emailHost = process.env.EMAIL_HOST || "smtp.gmail.com";
+const emailPort = process.env.EMAIL_PORT
+  ? Number(process.env.EMAIL_PORT)
+  : 587;
+const emailSecure = process.env.EMAIL_SECURE === "true";
+
 const transporter = nodemailer.createTransport(
   {
-    service: "gmail",
-  //     host: "smtp.gmail.com",
-  // port: 587,
-  // secure: false,
-  // family: 4,
+    host: emailHost,
+    port: emailPort,
+    secure: emailSecure,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: true,
+    },
+    family: 4,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
   } as any
 );
 
-// verify the connection configuration
-transporter.verify(
-  (error, success) => {
-    if (error) {
-      console.log(
-        "SMTP ERROR:",
-        error
-      );
-    } else {
-      console.log(
-        "SMTP READY"
-      );
-    }
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("SMTP ERROR:", error);
+  } else {
+    console.log("SMTP READY");
   }
-);
+});
 export const sendEmail = async (
   to: string,
   subject: string,
