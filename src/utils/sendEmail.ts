@@ -8,13 +8,16 @@ const emailHost = process.env.EMAIL_HOST || "smtp.gmail.com";
 const emailPort = process.env.EMAIL_PORT
   ? Number(process.env.EMAIL_PORT)
   : 587;
-const emailSecure = process.env.EMAIL_SECURE === "true";
+const emailSecure = process.env.EMAIL_SECURE
+  ? process.env.EMAIL_SECURE === "true"
+  : emailPort === 465;
 
 const transporter = nodemailer.createTransport(
   {
     host: emailHost,
     port: emailPort,
     secure: emailSecure,
+    requireTLS: !emailSecure,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -23,8 +26,8 @@ const transporter = nodemailer.createTransport(
       rejectUnauthorized: true,
     },
     family: 4,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
   } as any
 );
 
@@ -56,14 +59,23 @@ export const sendEmail = async (
   } catch (error: any) {
     console.error("Failed to send email:", error);
 
-    if (error?.code === "EAUTH") {
+    const code = error?.code || "UNKNOWN";
+    const message = error?.message || "No error message returned.";
+
+    if (code === "EAUTH") {
       throw new Error(
         "Email authentication failed. Check EMAIL_USER and EMAIL_PASS, or use a Gmail app password."
       );
     }
 
+    if (code === "ETIMEDOUT") {
+      throw new Error(
+        `Unable to send reset email (${code}). Connection timed out to ${emailHost}:${emailPort}. Check your SMTP host, port, and network/firewall rules.`
+      );
+    }
+
     throw new Error(
-      "Unable to send reset email. Please check your email service configuration."
+      `Unable to send reset email (${code}). ${message}`
     );
   }
 };
