@@ -32,9 +32,9 @@ import {
   initializeSocket,
 } from "./config/socket";
 
-import {
-  registerBookingEvents,
-} from "./sockets/booking.socket";
+// import {
+//   registerBookingEvents,
+// } from "./sockets/booking.socket";
 
 const startServer = async () => {
   try {
@@ -46,7 +46,7 @@ const startServer = async () => {
     const io =
       initializeSocket(server);
 
-    registerBookingEvents(io);
+    // registerBookingEvents(io);
 
     server.listen(
       env.PORT,
